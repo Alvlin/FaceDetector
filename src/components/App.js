@@ -2,8 +2,8 @@ import React, {Component} from 'react';
 import './App.css';
 import Particles from 'react-particles-js';
 import Navigation from './Navigation/Navigation';
-import Logo from './Logo/Logo';
 import ImageForm from './ImageForm/ImageForm';
+import ScanCount from './ScanCount/ScanCount';
 import FacialRecognition from './FacialRecognition/FacialRecognition';
 import SignIn from './SignIn/SignIn';
 import Register from './Register/Register';
@@ -25,6 +25,7 @@ const opts = {
   }
 }
 class App extends Component {
+
   constructor(){
     super();
     this.state = {
@@ -33,6 +34,13 @@ class App extends Component {
       outline: {},
       route:'signin',
       auth: 'Sign In',
+      user:{
+        id:'',
+        name:'',
+        email:'',
+        entries: 0,
+        joined:'',
+      }
     }
   }
 
@@ -62,15 +70,33 @@ class App extends Component {
     this.setState({
       imageUrl: this.state.input
     })
-    // send image to the api
-    app.models.predict('d02b4508df58432fbb84e800597b8959',this.state.input)
-      .then(resp => {
-        this.displayFaceBox(this.getFaceLocation(resp));
+    if(this.imageUrl){
+      app.models.predict('d02b4508df58432fbb84e800597b8959',this.state.input)
+        .then(resp => {
+          this.displayFaceBox(this.getFaceLocation(resp));
+          })
+        .catch(err => console.log("There was an error"));
+
+      fetch('http://localhost:3000/image', {
+        method: 'put',
+        headers: {'Content-Type' : 'application/json'},
+        body: JSON.stringify({
+          id: this.state.user.id
         })
-      .catch(err => console.log("There was an error"));
+      })
+      .then(res => res.json())
+      .then(data => {
+        this.setState(Object.assign(this.state.user, {entries: data}));
+      });
+    }
   }
+
   onRouteChange = (route,auth) => {
     this.setState({route,auth});
+  }
+
+  onUserChange = (user) => {
+    this.setState({user});
   }
   render(){
     return (
@@ -79,14 +105,14 @@ class App extends Component {
         <Navigation auth={this.state.auth} onRouteChange={this.onRouteChange}/>
         { this.state.route === 'home'
           ? <div>
-              <Logo />
+              <ScanCount name={this.state.user.name} entries={this.state.user.entries}/>
               <ImageForm onInput={this.onInput} onSubmit={this.onSubmit}/>
               <FacialRecognition outline={this.state.outline} imageUrl={this.state.imageUrl}/>
             </div>
           : (
               this.state.route === 'signin'
-              ? <SignIn onRouteChange={this.onRouteChange}/>
-              : <Register onRouteChange={this.onRouteChange}/>
+              ? <SignIn onRouteChange={this.onRouteChange} onUserChange={this.onUserChange}/>
+              : <Register onRouteChange={this.onRouteChange} />
             )
 
         }
