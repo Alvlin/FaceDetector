@@ -70,24 +70,25 @@ class App extends Component {
     this.setState({
       imageUrl: this.state.input
     })
-    if(this.imageUrl){
+    if(this.state.input){
       app.models.predict('d02b4508df58432fbb84e800597b8959',this.state.input)
-        .then(resp => {
-          this.displayFaceBox(this.getFaceLocation(resp));
-          })
-        .catch(err => console.log("There was an error"));
-
-      fetch('http://localhost:3000/image', {
-        method: 'put',
-        headers: {'Content-Type' : 'application/json'},
-        body: JSON.stringify({
-          id: this.state.user.id
-        })
+      .then(coords => {
+        this.displayFaceBox(this.getFaceLocation(coords));
       })
-      .then(res => res.json())
-      .then(data => {
-        this.setState(Object.assign(this.state.user, {entries: data}));
-      });
+      .then(() => {
+        fetch('http://localhost:3000/image', {
+          method: 'put',
+          headers: {'Content-Type' : 'application/json'},
+          body: JSON.stringify({
+            id: this.state.user.id
+          })
+        })
+        .then(res => res.json())
+        .then(data => {
+          this.setState(Object.assign(this.state.user, {entries: data}));
+        });
+      })
+      .catch(err => console.log("There was an error"));
     }
   }
 

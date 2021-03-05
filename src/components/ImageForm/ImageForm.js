@@ -13,7 +13,7 @@ const ImageForm = ({onInput,onSubmit}) => {
           <button className='w-15 grow f4 ph3 pv2 dib bg-light-blue' onClick={onSubmit}>
             <img src={Search} alt='Find'/>
           </button>
-          <button className='w-15 grow f4 ph3 pv2 dib bg-light-blue' >
+          <button className='w-15 grow f4 ph3 pv2 dib bg-light-blue'>
             <img src={Folder} alt='Find'/>
           </button>
         </div>
